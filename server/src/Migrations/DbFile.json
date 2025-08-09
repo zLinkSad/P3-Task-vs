@@ -1,0 +1,25 @@
+{
+  "Users": [
+    {
+      "Id": 1,
+      "Nombre": "darlyn",
+      "UserName": "dark",
+      "Password": "darlyn123"
+    },
+    {
+      "Id": 2,
+      "Nombre": "salomon",
+      "UserName": "salomonElMalo",
+      "Password": "123456"
+    }
+  ],
+  "Clients": [],
+  "Products": [
+    {
+      "Id": "tUzIW7kobI",
+      "Name": "laptop",
+      "Price": 150.9,
+      "Description": "Laptop Gamer CPU ryzen 7 7600U 32gb ram, 4gb de video"
+    }
+  ]
+}

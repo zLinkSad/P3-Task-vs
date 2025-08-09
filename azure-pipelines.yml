@@ -1,0 +1,126 @@
+trigger:
+  - Dev
+  - main
+  - DBA
+  - QA
+
+pr:
+  branches:
+    include:
+      - '*'
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  testResultsDir: '$(System.DefaultWorkingDirectory)/test-results'
+  artifactName: 'drop'
+  zipPath: '$(Build.ArtifactStagingDirectory)/app.zip'
+
+steps:
+  - checkout: self
+    fetchDepth: 1
+
+  - task: UseNode@1
+    inputs:
+      version: '20.x'
+    displayName: 'Instalar Node.js'
+
+  # Backend
+  - script: |
+      cd server
+      npm install
+    displayName: 'Instalar dependencias backend'
+
+  # Frontend
+  - script: |
+      cd Client
+      npm install
+    displayName: 'Instalar dependencias frontend (si usas alguna)'
+
+  # Copiar archivos del frontend al backend/Client
+  - script: |
+      mkdir -p server/Client
+      cp -r Client/* server/Client/
+    displayName: 'Copiar archivos frontend a backend'
+
+  # Crear carpeta de resultados
+  - script: mkdir -p $(testResultsDir)
+    displayName: 'Crear carpeta de resultados de prueba'
+
+  # Pruebas opcionales (si usas Jest)
+  - script: |
+      npx --no-install jest --ci --reporters=jest-junit --outputFile=$(testResultsDir)/jest-results.xml || echo "Las pruebas fallaron"
+    displayName: 'Ejecutar pruebas con Jest'
+    continueOnError: true
+
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFiles: '$(testResultsDir)/jest-results.xml'
+      testRunTitle: 'Resultados de pruebas Jest'
+      mergeTestResults: true
+      testResultsFormat: 'JUnit'
+    condition: always()
+
+  # Verificar contenido antes de empaquetar
+  - script: |
+      echo "Archivos dentro de server:"
+      ls -al server
+  - script: |
+      echo "Contenido antes de crear el ZIP:"
+      ls -al $(Build.ArtifactStagingDirectory)
+    displayName: 'Verificar contenido antes del ZIP'
+
+  # Empaquetar aplicación (backend + frontend)
+  - task: ArchiveFiles@2
+    inputs:
+      rootFolderOrFile: '$(System.DefaultWorkingDirectory)/server'
+      includeRootFolder: false
+      archiveType: 'zip'
+      archiveFile: '$(zipPath)'
+      replaceExistingArchive: true
+    displayName: 'Empaquetar aplicación en ZIP'
+
+  # Verificar que el ZIP fue creado correctamente
+  - script: |
+      echo "Verificando si se creó el app.zip:"
+      ls -al $(Build.ArtifactStagingDirectory)
+    displayName: 'Verificar existencia del ZIP'
+
+  # Publicar ZIP como artefacto para Release
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathToPublish: '$(Build.ArtifactStagingDirectory)'
+      artifactName: '$(artifactName)'  # drop
+      publishLocation: 'Container'
+    displayName: 'Publicar artefactos'
+
+  # Descargar el artefacto drop
+  - task: DownloadBuildArtifacts@1
+    inputs:
+      buildType: 'current'
+      downloadType: 'single'
+      artifactName: 'drop'
+      downloadPath: '$(Pipeline.Workspace)'
+    displayName: 'Descargar artefacto drop'
+
+  
+
+  - script: |
+      echo "Archivos en $(Pipeline.Workspace)/drop:"
+      ls -al $(Pipeline.Workspace)/drop
+    displayName: 'Verificar archivo ZIP'
+
+  - task: AzureWebApp@1
+    inputs:
+      azureSubscription: 'ServerConnectionNodeApp'
+      appType: 'webAppLinux'
+      appName: 'AppServiceNodeApp'
+      package: '$(Pipeline.Workspace)/drop/app.zip'
+    displayName: 'Desplegar a Azure App Service'
+    continueOnError: true
+
+
+
+
+

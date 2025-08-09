@@ -1,0 +1,1 @@
+cree un "Database", que enrealidad es un json, para no tener que desplegar un servidor pa la db
