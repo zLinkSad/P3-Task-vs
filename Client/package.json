@@ -1,0 +1,27 @@
+{
+  "name": "b2b---quotation",
+  "version": "1.0.0",
+  "description": "TODO: Give a short introduction of your project. Let this section explain the objectives or the motivation behind this project.",
+  "main": "main.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "npx jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://Manuel-Corripio@dev.azure.com/Manuel-Corripio/B2B%20-%20Quotation/_git/B2B%20-%20Quotation"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "jsdom": "^26.0.0",
+    "jest-junit": "^13.0.0" 
+  },
+  "dependencies": {
+    
+  }
+}
