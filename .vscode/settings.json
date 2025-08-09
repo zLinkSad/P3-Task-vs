@@ -1,3 +1,6 @@
 {
-    "dotnet.preferCSharpExtension": true
+    "dotnet.preferCSharpExtension": true,
+    "python.analysis.extraPaths": [
+        "./src"
+    ]
 }
